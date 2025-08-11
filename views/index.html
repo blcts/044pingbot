@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>044 Ping Bot</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body style="display:flex;justify-content:center;align-items:center;height:100vh;">
+  <button id="pingBtn" style="padding:20px;font-size:18px;">Ping Admin</button>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    document.getElementById("pingBtn").addEventListener("click", () => {
+      fetch("/ping", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: tg.initDataUnsafe.user.id,
+          firstName: tg.initDataUnsafe.user.first_name
+        })
+      }).then(() => tg.showAlert("Ping sent to admin!"));
+    });
+  </script>
+</body>
+</html>
