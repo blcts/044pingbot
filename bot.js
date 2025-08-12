@@ -1,5 +1,8 @@
 import { Telegraf } from "telegraf";
 import User from "./models/User.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
