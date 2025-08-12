@@ -5,44 +5,49 @@ import fetch from "node-fetch";
 import User from "./models/User.js";
 
 dotenv.config();
+
 const app = express();
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch(err => console.error("MongoDB error:", err));
-
+const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_IDS = process.env.ADMIN_IDS.split(",");
 
-// Called when mini app button is clicked
-app.post("/ping", async (req, res) => {
+(async () => {
   try {
-    const { chatId, firstName, username } = req.body;
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB connected");
 
-    // Ensure user is in DB
-    await User.updateOne(
-      { chatId },
-      { chatId, firstName, username, role: "USER" },
-      { upsert: true }
-    );
+    app.post("/ping", async (req, res) => {
+      try {
+        const { chatId, firstName, username } = req.body;
 
-    const text = `User ${firstName} (@${username || "no username"}) clicked the Ping button.`;
+        await User.updateOne(
+          { chatId },
+          { chatId, firstName, username, role: "USER" },
+          { upsert: true }
+        );
 
-    // Send to all admins
-    for (const adminId of ADMIN_IDS) {
-      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatId: adminId, text })
-      });
-    }
+        const usernameDisplay = username ? `@${username}` : "no username";
+        const text = `User ${firstName} (${usernameDisplay}) clicked the Ping button.`;
 
-    res.json({ success: true });
+        for (const adminId of ADMIN_IDS) {
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chat_id: adminId, text }) // note chat_id field here
+          });
+        }
+
+        res.json({ success: true });
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false });
+      }
+    });
+
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false });
+    console.error("Failed to connect to MongoDB:", err);
   }
-});
-
-app.listen(process.env.PORT, () => console.log(`Server running on ${process.env.PORT}`));
+})();
