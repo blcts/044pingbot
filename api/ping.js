@@ -1,30 +1,24 @@
 import mongoose from "mongoose";
-import User from "../models/User.js";  // adjust path
-import dotenv from "dotenv";
+import User from "../models/User.js";  
 import fetch from "node-fetch";
-
-dotenv.config();
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_IDS = process.env.ADMIN_IDS.split(",");
+const MONGO_URI = process.env.MONGO_URI;
 
-let isConnected = false;
-
-async function connectToDB() {
-  if (isConnected) return;
-  await mongoose.connect(process.env.MONGO_URI);
-  isConnected = true;
+async function connectDB() {
+  if (mongoose.connection.readyState === 1) return;
+  await mongoose.connect(MONGO_URI);
 }
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    res.status(405).json({ message: "Method not allowed" });
-    return;
+    return res.status(405).json({ message: "Method not allowed" });
   }
 
-  try {
-    await connectToDB();
+  await connectDB();
 
+  try {
     const { chatId, firstName, username } = req.body;
 
     await User.updateOne(
@@ -39,13 +33,13 @@ export default async function handler(req, res) {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: adminId, text }),
+        body: JSON.stringify({ chat_id: adminId, text })
       });
     }
 
     res.status(200).json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ success: false });
   }
 }
