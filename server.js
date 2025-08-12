@@ -21,30 +21,34 @@ const ADMIN_IDS = process.env.ADMIN_IDS.split(",");
     app.post("/ping", async (req, res) => {
       try {
         const { chatId, firstName, username } = req.body;
-
+        console.log("Received ping from:", chatId, firstName, username);
+    
         await User.updateOne(
           { chatId },
           { chatId, firstName, username, role: "USER" },
           { upsert: true }
         );
-
-        const usernameDisplay = username ? `@${username}` : "no username";
-        const text = `User ${firstName} (${usernameDisplay}) clicked the Ping button.`;
-
+    
+        const text = `User ${firstName} (@${username || "no username"}) clicked the Ping button.`;
+    
         for (const adminId of ADMIN_IDS) {
-          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          console.log(`Sending message to admin chat_id: ${adminId}`);
+          const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chat_id: adminId, text }) // note chat_id field here
+            body: JSON.stringify({ chat_id: adminId, text }) // note: chat_id with underscore
           });
+          const data = await response.json();
+          console.log("Telegram API response:", data);
         }
-
+    
         res.json({ success: true });
       } catch (err) {
-        console.error(err);
+        console.error("Error in /ping:", err);
         res.status(500).json({ success: false });
       }
     });
+    
 
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (err) {
