@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
 import User from "./models/User.js";
+import bot from "./bot.js";
 
 dotenv.config();
 
@@ -54,4 +55,8 @@ const ADMIN_IDS = process.env.ADMIN_IDS.split(",");
   } catch (err) {
     console.error("Failed to connect to MongoDB:", err);
   }
+  
+  bot.launch()
+  .then(() => console.log("Telegram bot launched"))
+  .catch(console.error);
 })();
