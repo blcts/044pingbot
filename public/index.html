@@ -13,7 +13,7 @@
     tg.expand();
 
     document.getElementById("pingBtn").addEventListener("click", () => {
-      fetch("/ping", {
+      fetch(" https://044pingbot.vercel.app/ping", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
