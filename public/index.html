@@ -17,8 +17,9 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: tg.initDataUnsafe.user.id,
-          firstName: tg.initDataUnsafe.user.first_name
+          chatId: tg.initDataUnsafe.user.id,
+          firstName: tg.initDataUnsafe.user.first_name,
+          username: tg.initDataUnsafe.user.username
         })
       }).then(() => tg.showAlert("Ping sent to admin!"));
     });

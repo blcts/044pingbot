@@ -8,8 +8,8 @@ bot.start(async (ctx) => {
   const isAdmin = process.env.ADMIN_IDS.split(",").includes(chatId);
 
   await User.updateOne(
-    { chat_id: chatId },
-    { chat_id: chatId, role: isAdmin ? "ADMIN" : "CLIENT" },
+    { chatId: chatId },
+    { chatId: chatId, role: isAdmin ? "ADMIN" : "CLIENT" },
     { upsert: true }
   );
 

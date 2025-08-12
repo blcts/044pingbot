@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  chat_id: { type: String, required: true, unique: true },
-  role: { type: String, enum: ["ADMIN", "CLIENT"], required: true }
+  chatId: { type: String, required: true, unique: true },
+  firstName: String,
+  username: String,
+  role: { type: String, enum: ["USER", "ADMIN"], default: "USER" }
 });
 
 export default mongoose.model("User", userSchema);
